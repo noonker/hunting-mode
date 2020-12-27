@@ -1,0 +1,38 @@
+#+TITLE: Hunting-Mode
+* THIS IS A WIP - Nothing Here Works Yet.
+If what you're looking at here looks interesting to you hit me up here or on Twitter @  @noonker_
+
+* Overview
+The problem with working with DFIR/Infrastructure Analysis/Threat hunting types of workflows is the different ways of visualizing the data and the need for both structured data but also not-cumbersome workflows. In all things there's a give and take.
+
+So ideally I want:
+ - Freeform notes that have an understanding of IoCs
+ - The IoCs should be automatically enriched with configured datasets (is this IoC in VT? If so show some glyph next to it to let me know)
+ - A way to pull in external APIs intelligence into my notes and maintain that linkage
+ - Automatically maintain the time metadata of an IoC (first seen, last seen, update dates, and changes)
+ - Maintain seperate investigations but be able to link the IoCs between investigations
+ - Exportable in sharable formats (csv, stix/taxii)
+ - Exportable in a roughly human readable form
+ - Be able to visualize the IoCs as both a series of relationships between nodes and a timeseries graph and be able to filter on the graph
+
+I think using org-roam with some enhanced features focused on IoCs and Pivoting will give me a lot of this.
+
+* Todos [0/15]
+** TODO Elastic Search abstraction
+** TODO APIs implemented
+** TODO Modeline shows current IoC, Last Ioc, Current investigation/project, Time Range Selection?, Global/Local Context, #IOCs
+** TODO Glyphs around IoCs
+** TODO Graph with Nodes, Timeline, and Play button with selectable time range, Export Visible, Filter
+*** https://observablehq.com/@chriszs/temporal-force-directed-graph
+*** http://bl.ocks.org/rengel-de/5603464
+*** http://bl.ocks.org/bunkat/2338034
+** TODO ATTACK
+** TODO EXPORT IoCs
+** TODO Turn thing under point into an IoC and add tags
+** TODO Turn all things in table to IoCs
+** TODO Promote Table
+** TODO POST iocs
+** TODO Org table to roam buffers with table editor for selecting date ranges
+** TODO API return SINGLESTAT
+** TODO Hunting Kill Ring
+** TODO Modeline with current context
