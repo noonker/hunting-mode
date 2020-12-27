@@ -21,14 +21,14 @@
 
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Variables.html
 ;; Define your custom doom-modeline
-(doom-modeline-def-modeline 'my-simple-line
-  '(bar matches buffer-info remote-host buffer-position parrot selection-info)
-  '(misc-info minor-modes input-method buffer-encoding major-mode process vcs checker))
+;; (doom-modeline-def-modeline 'my-simple-line
+;;   '(bar matches buffer-info remote-host buffer-position parrot selection-info)
+;;   '(misc-info minor-modes input-method buffer-encoding major-mode process vcs checker))
 
 ;; Add to `doom-modeline-mode-hook` or other hooks
-(defun setup-custom-doom-modeline ()
-   (doom-modeline-set-modeline 'my-simple-line 'default))
-(add-hook 'doom-modeline-mode-hook 'setup-custom-doom-modeline)
+;; (defun setup-custom-doom-modeline ()
+;;    (doom-modeline-set-modeline 'my-simple-line 'default))
+;; (add-hook 'doom-modeline-mode-hook 'setup-custom-doom-modeline)
 
 (setq global-mode-string (append global-mode-string '((hunting-current-ioc (list ("  IoC: " hunting-current-ioc))))))
 ;; TODO Clickable Element
@@ -39,4 +39,3 @@
 
 (provide 'hunting-modeline)
 ;;; hunting-modeline.el ends here
-
