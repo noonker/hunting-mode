@@ -1,5 +1,5 @@
 #+TITLE: Hunting-Mode
-* THIS IS A WIP - Nothing Here Works Yet.
+* THIS IS A WIP
 If what you're looking at here looks interesting to you hit me up here or on Twitter @  @noonker_
 
 * Overview
@@ -17,7 +17,79 @@ So ideally I want:
 
 I think using org-roam with some enhanced features focused on IoCs and Pivoting will give me a lot of this.
 
-* Todos [0/15]
+* Installing
+Many of these modules rely on interacting with a Python shell (with plans to migrate off this later)
+
+Required Python Libraries
+#+begin_src bash
+pip3 install requests pyattck
+#+end_src
+
+Add the following to your .profile/.bashrc
+#+begin_src bash
+export HUNTING_BASE="/Users/person/git/hunting-mode"
+export PATH="$HUNTING_BASE/bin:$PATH"
+export PYTHONPATH="$HUNTING_BASE/src/python/:$PYTHONPATH"
+#+end_src
+
+And the following API keys if you have them / want to use the APIs
+#+begin_src bash
+# Alienvault
+export ALIENVAULT_KEY=""
+
+# Censys
+export CENSYS_UID=""
+export CENSYS_SECRET=""
+
+# Domaintools
+export DOMAINTOOLS_USER=""
+export DOMAINTOOLS_KEY=""
+
+# Hybrid Analysis
+export HYBRIDANALYSIS_KEY=""
+
+# Maxmind
+export MAXMIND_ID=""
+export MAXMIND_KEY=""
+
+# MISP
+export MISP_KEY=""
+export MISP_URL=""
+
+# RiskIQ
+export RISKIQ_USERNAME=""
+export RISKIQ_KEY=""
+
+# Shodan
+export SHODAN_KEY=""
+
+# Twilio
+export TWILIO_SID=""
+export TWILIO_AUTH=""
+
+# URLScan.io
+export URLSCAN_KEY=""
+
+# Virustotal
+export VIRUSTOTAL_KEY=""
+#+end_src
+
+Once these are set you can generate the API functions necessary to query the above API sources. Currently these sit in your homedir but this will change shortly^tm
+
+#+begin_src bash
+python3 /$HUNTING_BASE/bin/generate_files.py
+#+end_src
+
+And finally add the following to your emacs config:
+#+begin_src emacs-lisp
+(load-file "/path/to/hunting-mode.el")
+(load-file "~/helm-sources.el")
+#+end_src
+
+
+* Todos [0/16]
+** TODO Convert APIs to Emacs Lisp
+** Convert ATT&CK to Emacs Lisp
 ** TODO Elastic Search abstraction
 ** TODO APIs implemented
 ** TODO Modeline shows current IoC, Last Ioc, Current investigation/project, Time Range Selection?, Global/Local Context, #IOCs
