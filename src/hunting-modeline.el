@@ -18,24 +18,52 @@
 ;;  description
 ;;
 ;;; Code:
-
-;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Variables.html
-;; Define your custom doom-modeline
-;; (doom-modeline-def-modeline 'my-simple-line
-;;   '(bar matches buffer-info remote-host buffer-position parrot selection-info)
-;;   '(misc-info minor-modes input-method buffer-encoding major-mode process vcs checker))
-
-;; Add to `doom-modeline-mode-hook` or other hooks
-;; (defun setup-custom-doom-modeline ()
-;;    (doom-modeline-set-modeline 'my-simple-line 'default))
-;; (add-hook 'doom-modeline-mode-hook 'setup-custom-doom-modeline)
-
-(setq global-mode-string (append global-mode-string '((hunting-current-ioc (list ("  IoC: " hunting-current-ioc))))))
+;; TODO Make this more dynamic with https://stackoverflow.com/questions/9019717/add-button-with-dynamic-menu-to-emacss-modeline
 ;; TODO Clickable Element
-;; TODO Toggle between IoC and Project
 ;; TODO Datepicker Icon
-;; TODO Last N
-(setq hunting-current-ioc nil)
+
+(defun hunting-modeline-create-view ()
+  (if hunting-modeline-toggle
+      ;; If
+      (format "  IoC: %s" (hunting-modeline-ioc-string))
+    ;; Else
+    (format "  Project: %s" hunting-current-project)
+    ))
+
+(defun hunting-modeline-ioc-string ()
+  (seq-reduce '(lambda (elt foo) (concat elt (format "%s<-" foo))) (seq-take hunting-kill-ring hunting-modeline-kill-history-visible) ""))
+
+
+(defun hunting-update-display ()
+  (setq hunting-current-view (hunting-modeline-create-view)))
+
+(defun hunting-toggle-view ()
+  (interactive)
+  (progn
+    (if hunting-modeline-toggle
+        (setq hunting-modeline-toggle nil)
+      (setq hunting-modeline-toggle t))
+    (setq hunting-current-view (hunting-modeline-create-view))
+    ))
+
+
+(defun hunting-enable-modeline ()
+  "Enables the hunting mode modeline."
+  (interactive)
+  (setq global-mode-string
+        (append global-mode-string
+                '((hunting-current-view (list (" " hunting-current-view))))))
+  )
+
+(defun hunting-disable-modeline ()
+  "Disable the hunting-mode modeline."
+  (interactive)
+  (setq global-mode-string
+        (seq-filter
+         (lambda (elt) (if (consp elt)
+                      (not (eq (car elt) 'hunting-current-view))
+                    t))
+         global-mode-string)))
 
 (provide 'hunting-modeline)
 ;;; hunting-modeline.el ends here

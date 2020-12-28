@@ -87,12 +87,11 @@ And finally add the following to your emacs config:
 #+end_src
 
 
-* Todos [0/16]
+* Todos [0/15]
 ** TODO Convert APIs to Emacs Lisp
 ** Convert ATT&CK to Emacs Lisp
 ** TODO Elastic Search abstraction
 ** TODO APIs implemented
-** TODO Modeline shows current IoC, Last Ioc, Current investigation/project, Time Range Selection?, Global/Local Context, #IOCs
 ** TODO Glyphs around IoCs
 ** TODO Graph with Nodes, Timeline, and Play button with selectable time range, Export Visible, Filter
 *** https://observablehq.com/@chriszs/temporal-force-directed-graph
