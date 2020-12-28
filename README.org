@@ -97,7 +97,6 @@ And finally add the following to your emacs config:
 *** https://observablehq.com/@chriszs/temporal-force-directed-graph
 *** http://bl.ocks.org/rengel-de/5603464
 *** http://bl.ocks.org/bunkat/2338034
-** TODO ATTACK
 ** TODO EXPORT IoCs
 ** TODO Turn thing under point into an IoC and add tags
 ** TODO Turn all things in table to IoCs
