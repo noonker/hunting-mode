@@ -87,7 +87,7 @@ And finally add the following to your emacs config:
 #+end_src
 
 
-* Todos [0/15]
+* Todos [0/12]
 ** TODO Convert APIs to Emacs Lisp
 ** Convert ATT&CK to Emacs Lisp
 ** TODO Elastic Search abstraction
@@ -104,5 +104,3 @@ And finally add the following to your emacs config:
 ** TODO POST iocs
 ** TODO Org table to roam buffers with table editor for selecting date ranges
 ** TODO API return SINGLESTAT
-** TODO Hunting Kill Ring
-** TODO Modeline with current context
