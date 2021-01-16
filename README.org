@@ -86,24 +86,29 @@ And finally add the following to your emacs config:
 (load-file "~/helm-sources.el")
 #+end_src
 
+* V0 todos
+** TODO Turn thing under point into an IoC and add tags
+** TODO Turn all things in table to IoCs
+** TODO Promote Table
+** Seperate IoC Folder
+** TODO Hunting Project & Roam Tags
+** TODO Append Projects
+** Active Timestamp
 
-* V1 Todos [0/11]
-** TODO Elastic Search abstraction
+* V1 Todos [0/10]
 ** TODO Glyphs around IoCs
 ** TODO Graph with Nodes, Timeline, and Play button with selectable time range, Export Visible, Filter, show only connected nodes
 *** https://observablehq.com/@chriszs/temporal-force-directed-graph
 *** http://bl.ocks.org/rengel-de/5603464
 *** http://bl.ocks.org/bunkat/2338034
 ** TODO EXPORT IoCs
-** TODO Turn thing under point into an IoC and add tags
-** TODO Turn all things in table to IoCs
-** TODO Promote Table
 ** TODO POST iocs
+
+* Longer Term [0/4]
 ** TODO Org table to roam buffers with table editor for selecting date ranges
 ** TODO API return SINGLESTAT
-** Seperate IoC Folder
-** TODO Hunting Project & Roam Tags & Append Projects
-
-* Longer Term [0/1]
+** TODO Elastic Search abstraction
 ** TODO Convert APIs to Emacs Lisp
 ** Convert ATT&CK to Emacs Lisp
+** Agenda Integrations
+** Make decision on whether or not to have auto-commit option to track knowledge over time
