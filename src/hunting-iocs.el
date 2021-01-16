@@ -19,30 +19,9 @@
 ;; good enough to distinguish one observable from another
 ;;
 ;;  IoC predicates for hunting mode
-;;
+;; TODO host:port regex
 ;;; Code:
 
-(setq hunting-ioc-regex
-      (quote (("IP"  "\\([0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\)")
-              ("IPv6" "") ;; https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
-              ("domain" "\\([a-zA-Z0-9-_]+\\(\\.\\|\\[\\.\\]\\)\\)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\(\\.\\|\\[\\.\\]\\)[a-zA-Z]\\{2,11\\}")
-              ("host" "\\(\\(\\([0-9]\\{1,3\\}\\(\\.\\|\\[\\.\\]\\)\\)\\{3\\}[0-9]\\{1,3\\}\\)\\|\\([a-zA-Z0-9-_]+\\(\\.\\|\\[\\.\\]\\)\\)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\(\\.\\|\\[\\.\\]\\)[a-zA-Z]\\{2,11\\}\\)")
-              ("url" "")
-              ("md5" "")
-              ("sha256" "")
-              ("sha1" "")
-              ("email-addr" "")
-              ("asn" "")
-              ("netblock"))))
-
-
-(setq hunting-ioc-types
-      (seq-map #'car hunting-ioc-regex))
-
-(setq hunting-entities
-      (append hunting-ioc-types
-              '("person"
-                "place")))
 
 (defun hunting-sha256-p (sha256)
   "Match a string representing a SHA256."
@@ -87,7 +66,9 @@
 (defun hunting-email-p (email)
   "Match a string representing an EMAIL."
   (s-matches-p (rx string-start
-                   (repeat 1 64 (in "A-Z" "a-z" "0-9" "." "!" "#" "$" "%" "&" "'" "*" "+" "-" "/" "=" "?" "^" "_" "`" "{" "|" "}" "~"))
+                   (repeat 1 64 (in "A-Z" "a-z" "0-9" "." "!" "#" "$" "%" "&"
+                                    "'" "*" "+" "-" "/" "=" "?" "^" "_" "`"
+                                    "{" "|" "}" "~"))
                    "@"
                    (repeat 1 68 (in "A-Z" "a-z" "0-9" "."))
                    string-end
@@ -95,17 +76,73 @@
 
 (defun hunting-asn-p (asn)
   "Match a string representing an ASN."
-  (< (string-to-number asn) 4294967295))
+  (and (s-matches-p (rx string-start
+                        (repeat 1 11 (in "0-9"))
+                        string-end) asn)
+       (< (string-to-number asn) 4294967295)))
 
+;; TODO IPv6 netblocks
 (defun hunting-netblock-p (netblock)
   "Match a string representing a NETBLOCK."
-  (rx (or ))
-  )
+  (cond
+   ((s-matches-p "-" netblock)
+    (let* ((split-netblock (split-string netblock "-")))
+      (and (= 2 (length split-netblock))
+           (seq-every-p 'hunting-ipv4-p split-netblock))))
+   ((s-matches-p "/" netblock)
+    (let* ((split-netblock (split-string netblock "/")))
+      (and (= 2 (length split-netblock))
+           (hunting-ipv4-p (nth 0 split-netblock))
+           (< (string-to-number (nth 1 split-netblock)) 33))))
+   nil))
 
-(defun hunting-ipv6p () )
+
+(defun hunting-ipv6-p (ipv6)
+  "Match a string representing an IPV6 address.
+TODO make this less bad"
+  (and
+   (s-matches-p ":" ipv6)
+   (s-matches-p (rx (repeat 1 128 (in "0-9" "a-z" "A-Z" ":" "."))) ipv6)))
 
 (defun hunting-url-p (url)
-  "Match a string representing a URL.")
+  "Match a string representing a URL."
+  (s-matches-p
+   (rx string-start
+       (zero-or-one (seq (repeat 0 30 (in "A-Z" "a-z"))
+                         "://"))
+       (repeat 0 68 (in "A-Z" "a-z" "0-9" "." "-"))
+       (zero-or-one (seq ":" (repeat 0 6 (in "0-9"))))
+       "/"
+       (>= 0 (in "A-Z" "a-z" "0-9" "-" "." "_" "~" "%" "?" "/" "#"))
+       string-end
+       )
+   url))
+
+(setq hunting-ioc-regex
+      (quote (("IP" hunting-ipv4-p)
+              ("IPv6" hunting-ipv6-p)
+              ("domain" hunting-domain-p)
+              ;; ("host" "")
+              ("url" hunting-url-p)
+              ("md5" hunting-md5-p)
+              ("sha256" hunting-sha256-p)
+              ("sha1" hunting-sha1-p)
+              ("email-addr" hunting-email-p)
+              ("asn" hunting-asn-p)
+              ("netblock" hunting-netblock-p))))
+
+
+(setq hunting-ioc-types
+      (seq-map #'car hunting-ioc-regex))
+
+(setq hunting-entities
+      (append hunting-ioc-types
+              '("person"
+                "place")))
+
+(defun hunting-ioc-type (ioc)
+  "Given an IOC try to determine the type."
+  (remove nil (mapcar (lambda (type-check) (if (apply (cadr type-check) `(,ioc)) (car type-check))) hunting-ioc-regex)))
 
 (provide 'hunting-iocs)
 ;;; hunting-iocs.el ends here
