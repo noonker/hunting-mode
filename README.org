@@ -87,13 +87,10 @@ And finally add the following to your emacs config:
 #+end_src
 
 
-* Todos [0/12]
-** TODO Convert APIs to Emacs Lisp
-** Convert ATT&CK to Emacs Lisp
+* V1 Todos [0/11]
 ** TODO Elastic Search abstraction
-** TODO APIs implemented
 ** TODO Glyphs around IoCs
-** TODO Graph with Nodes, Timeline, and Play button with selectable time range, Export Visible, Filter
+** TODO Graph with Nodes, Timeline, and Play button with selectable time range, Export Visible, Filter, show only connected nodes
 *** https://observablehq.com/@chriszs/temporal-force-directed-graph
 *** http://bl.ocks.org/rengel-de/5603464
 *** http://bl.ocks.org/bunkat/2338034
@@ -104,3 +101,9 @@ And finally add the following to your emacs config:
 ** TODO POST iocs
 ** TODO Org table to roam buffers with table editor for selecting date ranges
 ** TODO API return SINGLESTAT
+** Seperate IoC Folder
+** TODO Hunting Project & Roam Tags & Append Projects
+
+* Longer Term [0/1]
+** TODO Convert APIs to Emacs Lisp
+** Convert ATT&CK to Emacs Lisp
