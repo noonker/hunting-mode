@@ -19,14 +19,22 @@
 ;;
 ;;; Code:
 
+;; TODO update the headers with the new investigations
+;; TODO Get the context from the current file
+;; TODO Cteate hunting-org-capture-then-insert
+
+(require 'org-element)
+
 (setq org-roam-capture-templates
       (append org-roam-capture-templates
-              '(
-                ("z" "ioc" plain (function org-roam--capture-get-point)
-                 "%?"
+              '(("k" "ioc" entry (function org-roam--capture-get-point)
+                 "* %(if hunting-current-project hunting-current-project \"IA\") %(if hunting-org-roam-context (format \" - %s\" hunting-org-roam-context))\n#+INVESTIGATION: %(if hunting-current-project hunting-current-project \"IA\")\n%(if hunting-org-roam-context (format \"#+PARENT: %s\" hunting-org-roam-context))\n %?"
                  :file-name "intestigations/%<%Y%m%d%H%M%S>-${slug}"
                  :head "#+title: ${title}\n#+ROAM_ALIAS:\n#+ROAM_TAGS:\n#+CREATED: %U\n#+LAST_MODIFIED: %U\n\n"
                  :unnarrowed t))) )
+
+(defun hunting-org-capture-then-insert ()
+  (let ((hunting-org-roam-context ))))
 
 (provide 'hunting-org-roam)
 ;;; hunting-org-roam.el ends here
