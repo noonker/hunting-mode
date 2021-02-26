@@ -112,3 +112,5 @@ And finally add the following to your emacs config:
 ** Convert ATT&CK to Emacs Lisp
 ** Agenda Integrations
 ** Make decision on whether or not to have auto-commit option to track knowledge over time
+** Consider integration with elgantt
+https://github.com/legalnonsense/elgantt/
