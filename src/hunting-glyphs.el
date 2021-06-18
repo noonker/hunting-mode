@@ -19,13 +19,14 @@
 ;;
 ;;;Warning: Major mode commands must not call font-lock-add-keywords under any circumstances, either directly or indirectly, except through their mode hooks. (Doing so would lead to incorrect behavior for some minor modes.) They should set up their rules for search-based fontification by setting font-lock-keywords.
 ;;;
+(load-file "hunting-iocs.el")
 
 (define-minor-mode hunting-glyph-mode
   "Hunting Glyph mode is a minor mode that enables glyphs"
   nil "blah" nil
 
   (add-to-list 'font-lock-extra-managed-props 'display)
-  (loop for buf in (delete-dups (mapcar 'car hunting-glyph-hooks))
+  (cl-loop for buf in (delete-dups (mapcar 'car hunting-glyph-hooks))
         do (font-lock-add-keywords nil `((,buf 1  `(face nil display ,(hunting-glyphify (match-string 1) ,buf))))))
 
   (if (fboundp 'font-lock-flush)
@@ -37,8 +38,7 @@
 ;; Register new hook
 ;; (regex funtion t-glypht f-glyph)
 (defvar hunting-glyph-hooks
-  '(("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "✓" "x")
-    ("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "🟢" "🛑")
+  '(("\\([0123456789abcdefABCDEFG]\\{40\\}\\)" in-vt "🟢" "🛑")
     ))
 
 ;; Cache Format (object function glyph timestamp)
@@ -55,12 +55,12 @@
   (setq hunting-search-cache '())
   )
 
-(defun in-vt (hash apikey)
+(defun in-vt (hash)
   (let ((result nil))
     (request
       "https://www.virustotal.com/vtapi/v2/file/report"
       :params `(("resource" . ,hash)
-                ("apikey" . ,apikey))
+                ("apikey" . "TBD"))
       :parser 'json-read
       :sync t
       :success (cl-function
@@ -69,13 +69,6 @@
                     (setq result data))))
       )
     (if (= (alist-get 'response_code result) 1) t)))
-
-(defun hunting-foo (thing &rest _)
-  (message "COOL")
-  t)
-
-(dolist (func hunting-glyph-new-match-hook)
-  (funcall func t))
 
 (add-hook 'hunting-glyph-new-match-hook (lambda (m r) (message (format "Caching %s" m))))
 
