@@ -34,6 +34,26 @@
       (with-no-warnings (font-lock-fontify-buffer)))))
 
 (defvar hunting-glyph-debugging t)
+;; Register new hook
+;; (regex funtion t-glypht f-glyph)
+(defvar hunting-glyph-hooks
+  '(("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "✓" "x")
+    ("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "🟢" "🛑")
+    ))
+
+;; Cache Format (object function glyph timestamp)
+(defvar hunting-search-cache '())
+
+;; Hook called when a new hunting glyph is found. Takes two arguments;
+;;  - MATCH: the object that matched against the fontlock
+;;  - REGEX: the regex used for the match
+(defvar hunting-glyph-new-match-hook '())
+
+(defun hunting-glyphs-clear-cache ()
+  "Hunting glyphs are cached to avoid repeateted queries. Run this to clear cache"
+  (interactive)
+  (setq hunting-search-cache '())
+  )
 
 (defun in-vt (hash apikey)
   (let ((result nil))
@@ -50,25 +70,22 @@
       )
     (if (= (alist-get 'response_code result) 1) t)))
 
-(defun hunting-foo (thing)
+(defun hunting-foo (thing &rest _)
+  (message "COOL")
   t)
 
-;; Register new hook
-;; (regex funtion t-glypht f-glyph)
-(defvar hunting-glyph-hooks
-  '(("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "T" "F")
-    ("\\([0123456789abcdefABCDEFG]\\{40\\} \\)" hunting-foo "Z" "G")
-    ))
+(dolist (func hunting-glyph-new-match-hook)
+  (funcall func t))
 
-;; Cache Format (object function glyph timestamp)
-(defvar hunting-search-cache '())
+(add-hook 'hunting-glyph-new-match-hook (lambda (m r) (message (format "Caching %s" m))))
 
 (defun hunting-glyphify (match regex)
   (let ((cache-hit (car (seq-filter (lambda (elt) (string= match (car elt))) hunting-search-cache))))
     (if cache-hit (format "%s%s" (nth 2 cache-hit) match)
       (let* ((glyphs (seq-filter (lambda (elt) (string= (car elt) regex)) hunting-glyph-hooks))
              (glyph-values (mapcar (lambda (elt) (if (funcall (nth 1 elt) match) (nth 2 elt) (nth 3 elt))) hunting-glyph-hooks)))
-        (message (format "Caching %s" match))
+        (dolist (func hunting-glyph-new-match-hook)
+          (funcall func match regex))
         (add-to-list 'hunting-search-cache `(,match nil ,(apply #'concat glyph-values) ,(float-time)))
         (hunting-glyphify match regex)
         ))))
