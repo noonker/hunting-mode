@@ -1,0 +1,31 @@
+* Test Investigation
+:PROPERTIES:
+:ATTCK_ID: attack-pattern--0ff59227-8aa8-4c09-bf1f-925605bd07ea attack-pattern--232b7f21-adf9-4b42-b936-b9d6f7df856e attack-pattern--02c5abff-30bf-4703-ab92-1f6072fae939
+:END:
+
+2d87a602a991b23e55cef76844ee72b4 This is a hash
+
+It matches the following =DNS= =Malicious File= =Fileless Storage=
+
+Sha256 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+Sha1 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+Md5 cccccccccccccccccccccccccccccccc
+
+IP 192.168.0.1
+
+domain legitimate.company
+
+email ceo@legitimate.company
+
+ASN 1234678
+
+netblock 192.168.0.1/24
+
+ipv6 2001:db8:3c4d::
+
+url https://legitimate.company
+
+CVE CVE-2024-30204
+

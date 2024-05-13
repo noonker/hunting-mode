@@ -1,0 +1,23 @@
+* A buffer of IoCs
+
+=SHA256= 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+
+=MD5= b1946ac92492d2347c6235b4d2611184
+
+=SHA1= f572d396fae9206628714fb2ce00f72e94f2258f
+
+=IPV4= 127.0.0.1
+
+=DOMAIN= legitimate.company
+
+=EMAIL= ceo@legitimate.company
+
+=ASN= 4967295
+
+=NETBLOCK= 192.168.0.1/24
+
+=IPV6= 2001:4860:4860::8888
+
+=URL= https://legitimate.company
+
+=CVE= CVE-2024-27986

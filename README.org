@@ -2,7 +2,7 @@
 
 🚨🚨🚨 THIS IS A WIP 🚨🚨🚨
 
-If what you're looking at here looks interesting to you hit me up here or on Twitter @  @noonker_
+If what you're looking at here looks interesting to you hit me up here or at @noonker@infosec.exchange 
 
 * Overview
 The problem with working with DFIR/Infrastructure Analysis/Threat hunting types of workflows is the different ways of visualizing the data and the need for both structured data but also not-cumbersome workflows. In all things there's a give and take.
@@ -19,71 +19,33 @@ So ideally I want:
 
 Using org-roam with some enhanced features focused on IoCs and Pivoting will give me a lot of this.
 
-* Installing
-Many of these modules rely on interacting with a Python shell (with plans to migrate off this later)
+* Installation
 
-Required Python Libraries
-#+begin_src bash
-pip3 install requests pyattck
-#+end_src
-
-Add the following to your .profile/.bashrc
-#+begin_src bash
-export HUNTING_BASE="/Users/person/git/hunting-mode"
-export PATH="$HUNTING_BASE/bin:$PATH"
-export PYTHONPATH="$HUNTING_BASE/src/python/:$PYTHONPATH"
-#+end_src
-
-And the following API keys if you have them / want to use the APIs
-#+begin_src bash
-# Alienvault
-export ALIENVAULT_KEY=""
-
-# Censys
-export CENSYS_UID=""
-export CENSYS_SECRET=""
-
-# Domaintools
-export DOMAINTOOLS_USER=""
-export DOMAINTOOLS_KEY=""
-
-# Hybrid Analysis
-export HYBRIDANALYSIS_KEY=""
-
-# Maxmind
-export MAXMIND_ID=""
-export MAXMIND_KEY=""
-
-# MISP
-export MISP_KEY=""
-export MISP_URL=""
-
-# RiskIQ
-export RISKIQ_USERNAME=""
-export RISKIQ_KEY=""
-
-# Shodan
-export SHODAN_KEY=""
-
-# Twilio
-export TWILIO_SID=""
-export TWILIO_AUTH=""
-
-# URLScan.io
-export URLSCAN_KEY=""
-
-# Virustotal
-export VIRUSTOTAL_KEY=""
-#+end_src
-
-Once these are set you can generate the API functions necessary to query the above API sources. Currently these sit in your homedir but this will change shortly^tm
-
-#+begin_src bash
-python3 /$HUNTING_BASE/bin/generate_files.py
-#+end_src
-
-And finally add the following to your emacs config:
 #+begin_src emacs-lisp
-(load-file "/path/to/hunting-mode.el")
-(load-file "~/helm-sources.el")
+(use-package hunting-mode
+  :straight (:host github
+		   :repo "noonker/hunting-mode")
+  :ensure t
+  :init
+  (add-hook 'org-mode-hook 'hunting-mode)
+  (setq hunting-api-key-misp "YOUR_KEY")
+  (setq hunting-api-url-misp "YOUR_ENDPOINT")
+  (setq hunting-api-key-robtex "YOUR_KEY")
+  (setq hunting-api-key-circl-pdns "YOUR_KEY")
+
+;; Add some callback hooks :)
+  (add-to-list ' hunting-glyph-hooks
+		 `(,hunting-ipv4-regex-wrapped hunting-misp-ioc-in-misp-p "💢" "💤")
+		 `(,hunting-md5-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 `(,hunting-sha1-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 `(,hunting-sha256-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 )
+  )
+
 #+end_src
+
+
+* Recommended Additional (Rad) Libraries
+
+- GEO Locations embedded into org https://github.com/minad/osm <3
+- =svg-tag-mode=

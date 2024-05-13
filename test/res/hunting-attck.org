@@ -1,0 +1,16 @@
+* Hunting Attck Test
+:PROPERTIES:
+:ATTCK_ID: attack-pattern--72b74d71-8169-42aa-92e0-e7b04b9f5a08 attack-pattern--0458aab9-ad42-4eac-9e22-706a95bafee2 attack-pattern--53ac20cd-aca3-406e-9aa0-9fc7fdc60a5a attack-pattern--00f90846-cbd1-4fc5-9233-df5c2bf2a662 attack-pattern--30208d3e-0d6b-43c8-883e-44462a514619 attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736
+:END:
+
+=Account Discovery=
+
+=Acquire Infrastructure=
+
+=Archive Collected Data=
+
+=Archive via Utility=
+
+=Automated Collection=
+
+=PowerShell=
