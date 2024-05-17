@@ -99,15 +99,6 @@
    ((= 1 hunting-modeline-toggle) (format " 🔬 IoC: %s" (hunting-modeline-ioc-string)))
    ((= 0 hunting-modeline-toggle) (format "  Project: %s" hunting-project-current-project))))
 
-(defun hunting-project-switch-current-file ()
-  "Change the current hunting focused file."
-  (interactive)
-  (let ((project (if hunting-project-current-project
-                     hunting-project-current-project
-                   (hunting-helm-switch-projects))))
-    (setq hunting-current-file
-	  (completing-read "File: " (directory-files (file-name-concat hunting-project-basedir project "samples"))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;

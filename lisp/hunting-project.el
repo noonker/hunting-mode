@@ -56,7 +56,10 @@
     (make-directory (file-name-concat hunting-project-basedir project "scripts"))
     (write-region "" nil (file-name-concat hunting-project-basedir project (format "%s.yar" project)))
     (write-region (hunting-project--template project) nil (file-name-concat "" hunting-project-basedir project (format "%s.org" project)))
-    (find-file (file-name-concat "" hunting-project-basedir project (format "%s.org" project)))))
+    (find-file (file-name-concat "" hunting-project-basedir project (format "%s.org" project)))
+    (setq hunting-project-current-project (file-name-concat hunting-project-basedir project))
+    (setenv "HUNTING_DIR" hunting-project-current-project)
+    ))
 
 (defun hunting-project-switch-projects ()
   "Switch between projects in `hunting-project-basedir`."
@@ -64,6 +67,18 @@
   (setq hunting-project-current-project
 	(completing-read "Project: " (directory-files hunting-project-basedir)))
   (setenv "HUNTING_DIR" (file-name-concat hunting-project-basedir hunting-project-current-project)))
+
+(defun hunting-project-switch-current-file ()
+  "Change the current hunting focused file."
+  (interactive)
+  (let ((project (if hunting-project-current-project
+                     hunting-project-current-project
+                   (hunting-helm-switch-projects))))
+    (setq hunting-current-file
+	  (completing-read "File: " (directory-files (file-name-concat hunting-project-basedir project "samples"))))
+    (setenv "HUNTING_FILE" (expand-file-name (file-name-concat hunting-project-basedir project "samples" hunting-current-file)) )
+    ))
+
 
 (defun hunting-project-hash-contains-p(hn)
   "Given some hashname HN, return t if it is in the current project."
