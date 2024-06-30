@@ -48,7 +48,9 @@ Takes two arguments;
 
 (define-minor-mode hunting-glyph-mode
   "Hunting Glyph mode is a minor mode that enables glyphs."
-  nil "" nil
+  :init-value nil
+  :lighter "hunting-glyph"
+  :keymap nil
   (hunting-log/info "Enabling hunting glyph minor mode")
   (add-to-list 'font-lock-extra-managed-props 'display)
 
@@ -100,7 +102,9 @@ Run this to clear cache"
   t)
 
 (defun hunting-glyph-slowly-return-t (match)
-  "Return t no matter what the MATCH is.  Do it slowly to test deferred."
+  "Return t no matter what the MATCH is.
+  Do it slowly to test deferred."
+  (hunting-log/debug (format "%s" match))
   (sleep-for 3)
   t)
 

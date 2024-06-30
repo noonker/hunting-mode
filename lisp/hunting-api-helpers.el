@@ -20,11 +20,11 @@
 (require 'json)
 
 (defun hunting-api-helpers-pdns-to-json (pdns-string)
-"Convert the string represented by PDNS-STRING into json by concatenating the objects and adding them to a list.
+  "Convert the string represented by PDNS-STRING into JSON.
 https://datatracker.ietf.org/doc/html/draft-dulaunoy-dnsop-passive-dns-cof"
-(json-read-from-string
- (format "[%s]"
-	 (string-replace "\n{" ",{" pdns-string))))
+  (json-read-from-string
+   (format "[%s]"
+	   (string-replace "\n{" ",{" pdns-string))))
 
 
 (provide 'hunting-api-helpers)

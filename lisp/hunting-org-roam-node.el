@@ -47,7 +47,8 @@
 	 (project-name hunting-project-current-project)
 	 (current-node (org-roam-node-id (org-roam-node-at-point)))
 	 (current-node-title (cadr (car (org-collect-keywords '("TITLE")))))
-	 (current-node-link (format "[[id:%s][%s]]" current-node current-node-title)))
+	 (current-node-link (format "[[id:%s][%s]]" current-node current-node-title))
+	 (current-node-paranoia-buffer-level (cadr (car (org-collect-keywords '("PARANOIA"))))))
     (if ioc
       (progn
 	(hunting-log/debug (format "Creating Roam Note from IoC: %s with title %s" ioc title))
@@ -58,6 +59,8 @@
 					 :target (file+head+olp ,(format "notes/%s.org" (hunting-org-roam-node--safe-name title))
 								,(concat "#+title: "
 									 title
+									 (if current-node-paranoia-buffer-level
+									     (format "\n#+PARANOIA: %s" current-node-paranoia-buffer-level))
 									 "\n#+ROAM_ALIAS:\n#+FILETAGS: :ioc: :"
 									 ioc-type
 									 ": :"

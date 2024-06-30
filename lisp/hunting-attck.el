@@ -54,21 +54,21 @@
     nil))
 
 (defun hunting-attck-check-or-download ()
-  "Entrypoint for a command which requires the files to be downloaded before proceeding."
+  "Entrypoint for a command which requires the files to be downloaded."
   (if (hunting-attck-attack-is-downloaded-p)
       (progn
 	(if (not hunting-attck-enterprise)
 	    (setq hunting-attck-enterprise (json-read-file (file-name-concat user-emacs-directory "hunting/enterprise-attack.json")))
 	    )
 	(setq hunting-attck-attck-techniques
-	      (get-attck--attack-patterns))
+	      (hunting-attck--get-attck-patterns))
 	t
 	)
     (if (hunting-attck-prompt-to-download-attack-files)
 	(progn
 	  (setq hunting-attck-enterprise (json-read-file (file-name-concat user-emacs-directory "hunting/enterprise-attack.json")))
 	  (setq hunting-attck-attck-techniques
-		(get-attck--attack-patterns))
+		(hunting-attck--get-attck-patterns))
 	  t)
       (progn
 	(hunting-log/info "ATT&CK files not downloaded.")
@@ -78,8 +78,8 @@
   "Download the current ATT&CK files from the MITRE github repository.
 This will download the enterprise, ics, and mobile attack files.
 The files will be saved in the user-emacs-directory/hunting directory."
-  (hunting-log/info "Downloading ATT&CK files")
   (interactive)
+  (hunting-log/info "Downloading ATT&CK files")
   (if (and (hunting-paranoia-function-acceptable-for-p hunting-paranoia-level-passive-neutral)
 	   (or (not (hunting-attck-attack-is-downloaded-p))
 	       force))
@@ -118,6 +118,15 @@ The ID will be tracked in the PROPERTIES drawer of the current headline."
 		   (insert (format "=%s=" res)))))
     (hunting-log/error "Command could not be run because the ATT&CK files were not downloaded")))
 
+
+(defun hunting-attck-insert-malware (&optional entity)
+  "Insert a structured attack ENTITY into the buffer."
+  (interactive)
+  (if (hunting-attck-check-or-download)
+      (let ((res (if entity entity (completing-read "ATT&CK: " (seq-map 'cadr (hunting-attck--get-malware)) nil t))))
+	(if res (insert (format "=%s=" res))))
+    (hunting-log/error "Command could not be run because the ATT&CK files were not downloaded")))
+
 (defun hunting-attck-insert-table ()
   "Calculates the intrusion set that match the ATTCK_IDs in this buffer. 
 Displays the result in a table."
@@ -132,8 +141,20 @@ Displays the result in a table."
 ;; Helper Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-(defun get-attck--attack-patterns ()
-  "From the enterprise-attack parsed json file extract the attack-patterns and return '(id name)."
+(defun hunting-attck--get-malware ()
+  "From the enterprise-attack parsed json file get the malware names."
+    (mapcar
+   (lambda (x) (list
+		(alist-get 'id x)
+		(alist-get 'name x)))
+   (seq-filter
+    (lambda (x) (string= (alist-get 'type x)
+			 "malware"))
+    (alist-get 'objects hunting-attck-enterprise)))
+  )
+
+(defun hunting-attck--get-attck-patterns ()
+  "Extract the attack-patterns from enterprise attacks and return \\='(id name)."
   (mapcar
    (lambda (x) (list
 		(alist-get 'id x)
@@ -181,7 +202,8 @@ Displays the result in a table."
 	(push (cons x 1) res)))))
 
 (defun hunting-attck--id-to-counts (ids &optional n)
-  "Return a subset of IDS of the computed most likely intrusion set.  Return N elements."
+  "Return a subset of IDS of the computed most likely intrusion set. 
+Return N elements."
   (let* ((elt-counts (hunting-attck--count-repeated-elements
 		      (mapcar 'cadr
 			      (hunting-attck--ids-to-usage

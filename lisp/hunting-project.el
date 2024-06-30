@@ -27,10 +27,18 @@
 ;;; Code:
 
 (require 'hunting-log)
+(require 'org)
+(require 'org-roam)
 
 (defgroup hunting-project nil
   "Hunting-mode project-related functions."
   :group 'hunting-mode)
+
+(defvar hunting-project-current-file "none"
+  "The current project file being analyzed.")
+
+(defvar hunting-project-current-ioc "none"
+  "The current IoC being investigated.")
 
 (defvar hunting-project-basedir org-roam-directory
   "The base directory for hunting-mode projects.")
@@ -73,14 +81,14 @@
   (interactive)
   (let ((project (if hunting-project-current-project
                      hunting-project-current-project
-                   (hunting-helm-switch-projects))))
-    (setq hunting-current-file
+                   (hunting-project-switch-projects))))
+    (setq hunting-project-current-file
 	  (completing-read "File: " (directory-files (file-name-concat hunting-project-basedir project "samples"))))
-    (setenv "HUNTING_FILE" (expand-file-name (file-name-concat hunting-project-basedir project "samples" hunting-current-file)) )
+    (setenv "HUNTING_FILE" (expand-file-name (file-name-concat hunting-project-basedir project "samples" hunting-project-current-file)) )
     ))
 
 
-(defun hunting-project-hash-contains-p(hn)
+(defun hunting-project-hash-contains-p (hn)
   "Given some hashname HN, return t if it is in the current project."
   (interactive)
   (let* ((hashname (gethash hn hunting-project-hash-cache)))

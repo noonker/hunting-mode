@@ -20,6 +20,7 @@
 ;;; Code:
 
 (require 'hunting-log)
+(require 'org)
 
 (defvar hunting-paranoia-level 4
   "The current paranoia level.")
@@ -59,6 +60,31 @@
   "The level of paranoia for the current session."
   :group 'hunting-mode
   :type 'integer)
+
+(defun hunting-paranoia-local-level ()
+  "Checks if the current buffer overrides the paranoia level."
+  (let* ((buffer-paranoia-level-variable (cadr (car (org-collect-keywords '("PARANOIA")))))
+	(buffer-paranoia-level (if buffer-paranoia-level-variable
+				   (downcase buffer-paranoia-level-variable)
+				 nil)))
+    (if buffer-paranoia-level
+	(cond
+	 ((string-match-p "local" buffer-paranoia-level) hunting-paranoia-level-local)
+	 ((string-match-p "neutral" buffer-paranoia-level) hunting-paranoia-level-passive-neutral)
+	 ((string-match-p "passive" buffer-paranoia-level) hunting-paranoia-level-passive)
+	 ((string-match-p "active" buffer-paranoia-level) hunting-paranoia-level-active)
+	 ((string-match-p "illegal" buffer-paranoia-level) hunting-paranoia-level-illegal)
+	 (t nil)
+	 )
+      nil)))
+
+(defun hunting-update-local-paranoia ()
+  "Check to see if the current file has a paranoia level associated with it."  
+  (let ((paranoia-local-level (hunting-paranoia-local-level)))
+    (if paranoia-local-level
+	(progn (make-local-variable 'hunting-paranoia-level)
+	       (setq hunting-paranoia-level paranoia-local-level))
+      )))
 
 ;; TODO figure out how competetors are handled
 (defun hunting-paranoia-function-acceptable-for-p (level)

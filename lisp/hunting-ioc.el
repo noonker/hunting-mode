@@ -26,6 +26,8 @@
 (require 'hunting-log)
 (require 'hunting-regex)
 (require 'hunting-org-roam)
+(require 'hunting-project)
+
 (require 'org)
 
 (defvar hunting-ioc-types (seq-map #'car hunting-ioc-predicates))
@@ -38,14 +40,14 @@
   "Try to get an IOC based on the current context.
 1. IOC arg
 2. `hunting-ioc-at-point`
-3. `hunting-current-ioc`
+3. `hunting-project-current-ioc`
 4. `read-string`"
   (interactive)
   (let ((ioc-at-point (hunting-ioc-at-point)))
     (cond
      (ioc ioc) ;; First just return the passed ioc if someone passed it
      (ioc-at-point (cdr (assoc 'element ioc-at-point)))
-     ((not (string= hunting-current-ioc "none")) hunting-current-ioc)
+     ((not (string= hunting-project-current-ioc "none")) hunting-project-current-ioc)
      (t (read-string "IoC: ")))))
 
 (defun hunting-ioc-type (ioc)
@@ -58,9 +60,9 @@
 (defun hunting-ioc-time-bound-ioc-p (ioc)
   "Predicate for determining if the IOC is a time-bound ioc."
   (interactive)
-  (let* ((match (string-match (rx (group (*? graph))
+  (let* ((match (string-match (rx (group (*? print))
 				  (literal "-<")
-				  (one-or-more graph)
+				  (one-or-more print)
 				  (literal ">"))
 			      ioc))
 	 (ioc-base (if match (substring ioc
@@ -72,10 +74,10 @@
 	(if (string-match-p (rx
 			     (one-or-more graph)
 			     (literal "-<")
-			     (one-or-more graph)
+			     (one-or-more print)
 			     (literal ">")
 			     (zero-or-one (literal "--<")
-					  (one-or-more graph)
+					  (one-or-more print)
 					  (literal ">"))
 			     )
 			    ioc)
@@ -89,12 +91,22 @@ On match return:
   (interactive)
   (if (not (eq major-mode 'org-mode))
       (error "This function only works in org-mode"))
-  (let* ((whitespace-regex (rx (or line-start line-end (not graphic))))
-	 (back-whitespace (save-excursion (re-search-backward whitespace-regex)))
+  (let* ((back-whitespace (save-excursion (re-search-backward (rx (or line-start
+								      (not graphic))))))
 	 (forward-whitespace (save-excursion (progn
 					       ;; TODO If this is not the end of the buffer
 					       (goto-char (+ 1 (point)))
-					       (re-search-forward whitespace-regex))))
+					       (re-search-forward (rx (or line-end
+									  (seq ">" space)
+									  (seq space
+									       (not (any "Sun>"
+											 "Mon>"
+											 "Tue>"
+											 "Wed>"
+											 "Thu>"
+											 "Fri>"
+											 "Sat>")))
+									  ))))))
 	 (result nil)
 	 (result-type nil)
 	 (time-range nil)
@@ -118,7 +130,7 @@ On match return:
     ;; First see if we need ot pull out the time bound portion of the IoC
     (setq element (string-match (rx (group (*? graph)) 
 				    (literal "-<")
-				    (one-or-more graph)
+				    (one-or-more print)
 				    (literal ">"))
 				result))
     
@@ -175,7 +187,7 @@ On match return:
 
 (defun hunting-ioc--get-time-range (ioc)
   "Parse the time range from a time-bound IOC object."
-  (let* ((match (string-match (rx (*? graph)
+  (let* ((match (string-match (rx (*? print)
 				  (literal "-")
 				  (group (literal "<")
 					 (minimal-match (one-or-more ascii))

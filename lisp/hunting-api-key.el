@@ -21,7 +21,8 @@
 
 (defgroup hunting-api-key nil
   "API Keys for various hunting activity."
-  :prefix "hunting-api")
+  :prefix "hunting-api"
+  :group 'applications)
 
 (defcustom hunting-api-key-alienvault nil
   "Alienvault API key."
@@ -85,9 +86,15 @@
   :group 'hunting-api-key)
 
 (defcustom hunting-api-key-circl nil
+  "CIRCL MISP API key."
+  :type 'string
+  :group 'hunting-api-key)
+
+(defcustom hunting-api-key-circl-pdns nil
   "CIRCL Passive DNS API key."
   :type 'string
   :group 'hunting-api-key)
 
-(provide 'hunting-api-keys)
+
+(provide 'hunting-api-key)
 ;;; hunting-api-keys.el ends here

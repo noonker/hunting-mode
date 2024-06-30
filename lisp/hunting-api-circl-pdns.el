@@ -19,6 +19,7 @@
 
 (require 'request)
 (require 'hunting-paranoia)
+(require 'hunting-api-key)
 (require 'hunting-api-helpers)
 (require 'hunting-log)
 (require 'json-to-org-table)

@@ -21,6 +21,9 @@
 (require 'hunting-paranoia)
 (require 'hunting-glyph)
 (require 'hunting-org-roam)
+(require 'hunting-attck)
+(require 'hunting-api-meta)
+(require 'hunting-org-roam-node)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Mode Definitions ;;
@@ -34,12 +37,6 @@
 (defvar hunting-modeline nil
   "Customization group for hunting-mode modeline.")
 
-(defvar hunting-current-ioc "none"
-  "The current IoC being investigated.")
-
-(defvar hunting-current-file "none"
-  "The current file being investigated.")
-
 (defvar hunting-modeline-kill-history-visible 3
   "Number of elements in the hunting kill ring visible.")
 
@@ -49,13 +46,17 @@
 (defvar hunting-modeline-toggle 2
   "Toggle between the different views in the modeline.")
 
+(defvar hunting-current-view 0
+  "Currently displayed information about project.")
+
 (defvar hunting-mode-map
   (let ((map (make-keymap)))
     (define-key map (kbd "C-c h i") 'hunting-new-current-ioc)
     (define-key map (kbd "C-c h p c") 'hunting-project-create-project)
     (define-key map (kbd "C-c h p s") 'hunting-project-switch-project)
-    (define-key map (kbd "C-c h a") 'hunting-attck-insert)
+    (define-key map (kbd "C-c h a a") 'hunting-attck-insert)
     (define-key map (kbd "C-c h t") 'hunting-attck-insert-table)
+    (define-key map (kbd "C-c h a m") 'hunting-attck-insert-malware)
     (define-key map (kbd "C-c h h") 'hunting-org-roam-node-convert-at-point)
     (define-key map (kbd "C-c h <TAB>") 'hunting-toggle-view)
     (define-key map (kbd "C-c h m") 'hunting-api-meta-call)
@@ -65,8 +66,10 @@
 
 (define-minor-mode hunting-mode
   "Hunting-mode enables powerful IoC workflows."
-  ""
+  :init-value nil
+  :lighter "hunting"
   :keymap hunting-mode-map
+  (hunting-update-local-paranoia)
   (hunting-glyph-mode 1)
   (hunting-enable-modeline))
 
@@ -83,19 +86,20 @@
   "Change the value of the current ioc to NEW_IOC."
   (interactive "sIoc: ")
   (setq hunting-kill-ring (cons new_ioc hunting-kill-ring))
-  (setq hunting-current-ioc new_ioc))
+  (setq hunting-project-current-ioc new_ioc))
 
 (defun hunting-previous-ioc ()
-  "Change the value of the global value current ioc to a previous IoC in the kill ring."
+  "Change the value of the global value current ioc.
+Change to a previous IoC in the kill ring."
   (interactive)
-  (setq hunting-current-ioc (completing-read "IoC: " hunting-kill-ring))
-  (setq hunting-kill-ring (cons hunting-current-ioc hunting-kill-ring)))
+  (setq hunting-project-current-ioc (completing-read "IoC: " hunting-kill-ring))
+  (setq hunting-kill-ring (cons hunting-project-current-ioc hunting-kill-ring)))
 
 (defun hunting-modeline-create-view ()
   "Function called on modeline to provide local context."
   (cond
    ((= 3 hunting-modeline-toggle) (format " 😖 Paranoia: %i" hunting-paranoia-level))
-   ((= 2 hunting-modeline-toggle) (format " 📔 File: %s" (if hunting-current-file hunting-current-file "none")))
+   ((= 2 hunting-modeline-toggle) (format " 📔 File: %s" (if hunting-project-current-file hunting-project-current-file "none")))
    ((= 1 hunting-modeline-toggle) (format " 🔬 IoC: %s" (hunting-modeline-ioc-string)))
    ((= 0 hunting-modeline-toggle) (format "  Project: %s" hunting-project-current-project))))
 
@@ -104,7 +108,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun hunting-modeline-ioc-string ()
-  "Return a formatted string of the last `hunting-modeline-kill-history-visible` iocs."
+  "Return a formatted string of hunting-modeline-kill-history-visible."
   (seq-reduce '(lambda (elt foo)
 		 (concat elt (format "%s<-" foo)))
 	      (seq-take hunting-kill-ring hunting-modeline-kill-history-visible) ""))
