@@ -92,6 +92,20 @@ Run this to clear cache"
 	  (,hunting-url-regex-wrapped hunting-glyph-return-t "🐯" "🛑")
           (,hunting-cve-regex-wrapped hunting-glyph-return-t "🦥" "🛑"))))
 
+(defun hunting-glyph-validate-hooks ()
+  "Ensure that hunting-glyph-hooks is well formed."
+  (interactive)
+  (if (seq-every-p
+    (lambda (elt) (and (stringp (nth 0 elt))
+		       (symbolp (nth 1 elt))
+		       (stringp (nth 2 elt))
+		       (stringp (nth 3 elt))
+		       (= 4 (length elt))
+		       ))
+    hunting-glyph-hooks)
+      (message "All is well.")
+    (message "Hunting Glyphs is malformed. Please consult the manual.")))
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -127,8 +141,22 @@ Run this to clear cache"
 		  (hunting-log/debug (format "Removing keyword"))
 		  (font-lock-remove-keywords nil keyword)))))
 
+(defun hunting-glyph-recalc-this-glyph ()
+  "Remove the glyph of the thing at point."
+  (interactive)
+  (let ((thing (thing-at-point 'symbol)))
+    (hunting-log/info (format "Removing %s from the cache" thing))
+    (setq hunting-glyph--search-cache (seq-remove (lambda (elt) (string= thing (car elt))) hunting-glyph--search-cache))))
+
+(defun hunting-glyph-recalculate-buffer (arg)
+  "Recalculates the glyphs for the current buffer.  Clears cache with prefix arg."
+  (interactive "P")
+  (if arg
+      (hunting-glyph-clear-cache))
+  (jit-lock-refontify (point-min) (point-max)))
+
 (defun hunting-glyph-glyphify (match regex)
-  "The function that is called when there is a "
+  "Update for REGEX MATCH in hunting glyph search cache."
   (let* ((match (substring-no-properties match))
 	 (cache-hit (car (seq-filter (lambda (elt) (string= match (car elt))) hunting-glyph--search-cache))))
 
@@ -143,32 +171,32 @@ Run this to clear cache"
 
 	(add-to-list ' hunting-glyph--search-cache `(,match nil "🕐" ,(float-time)))
 	
-       (deferred:$
-	  (deferred:next
-	   (lambda ()
-	     (hunting-log/debug "Calling glyph hooks")
-             (dolist (func hunting-glyph-new-match-hook)
-               (funcall func match (cdr (assoc regex hunting-regex-wrapped-reverse-regexes))))))
-	  (deferred:next
-	   (lambda ()
-	     (hunting-log/debug "Calling relevant functions")
-	     (mapcar
-	      (lambda (elt)
-		(if (funcall (nth 1 elt) match)
-		    (nth 2 elt)
-		  (nth 3 elt)))
-	      glyphs)))
-	  (deferred:nextc it
-			  (lambda (glyph-values)
-			    (hunting-log/debug "Replacing the cache")
-			    ;; TODO - This is pretty inefficent
-			    (setq hunting-glyph--search-cache (remove (assoc match hunting-glyph--search-cache) hunting-glyph--search-cache))
-			    (add-to-list 'hunting-glyph--search-cache
-					 `(,match nil ,(apply #'concat glyph-values) ,(float-time)))
-			    ))
-	  (deferred:next
-	   (lambda ()
-             (hunting-glyph-glyphify match regex))))))))
+	(deferred:$
+	 (deferred:next
+	  (lambda ()
+	    (hunting-log/debug "Calling glyph hooks")
+            (dolist (func hunting-glyph-new-match-hook)
+              (funcall func match (cdr (assoc regex hunting-regex-wrapped-reverse-regexes))))))
+	 (deferred:next
+	  (lambda ()
+	    (hunting-log/debug "Calling relevant functions")
+	    (mapcar
+	     (lambda (elt)
+	       (if (funcall (nth 1 elt) match)
+		   (nth 2 elt)
+		 (nth 3 elt)))
+	     glyphs)))
+	 (deferred:nextc it
+			 (lambda (glyph-values)
+			   (hunting-log/debug "Replacing the cache")
+			   ;; TODO - This is pretty inefficent
+			   (setq hunting-glyph--search-cache (remove (assoc match hunting-glyph--search-cache) hunting-glyph--search-cache))
+			   (add-to-list 'hunting-glyph--search-cache
+					`(,match nil ,(apply #'concat glyph-values) ,(float-time)))
+			   ))
+	 (deferred:next
+	  (lambda ()
+            (hunting-glyph-glyphify match regex))))))))
 
 (provide 'hunting-glyph)
 

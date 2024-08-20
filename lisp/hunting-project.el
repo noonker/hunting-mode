@@ -40,8 +40,11 @@
 (defvar hunting-project-current-ioc "none"
   "The current IoC being investigated.")
 
-(defvar hunting-project-basedir org-roam-directory
+(defvar hunting-project-basedir (file-truename (file-name-concat org-roam-directory "projects"))
   "The base directory for hunting-mode projects.")
+
+(defvar hunting-project-iocs-dir-name "iocs"
+  "Name of directory for iocs directory relative to org-roam-directory")
 
 (defvar hunting-project-current-project "adhoc"
   "The current project for hunting-mode.")
@@ -63,17 +66,67 @@
     (make-directory (file-name-concat hunting-project-basedir project "meta"))
     (make-directory (file-name-concat hunting-project-basedir project "scripts"))
     (write-region "" nil (file-name-concat hunting-project-basedir project (format "%s.yar" project)))
+    (write-region "#!/usr/bin/env " nil (file-name-concat hunting-project-basedir project (format "%s-analyzer" project)))
+    (set-file-modes (file-name-concat hunting-project-basedir project (format "%s-analyzer" project)) #o755)
     (write-region (hunting-project--template project) nil (file-name-concat "" hunting-project-basedir project (format "%s.org" project)))
     (find-file (file-name-concat "" hunting-project-basedir project (format "%s.org" project)))
-    (setq hunting-project-current-project (file-name-concat hunting-project-basedir project))
-    (setenv "HUNTING_DIR" hunting-project-current-project)
+    (setq hunting-project-current-project project)
+    (setenv "HUNTING_DIR" (file-truename (file-name-concat hunting-project-basedir hunting-project-current-project)))
     ))
+
+(defun hunting-project-sample-resolve (&optional ioc)
+  "Try to get an IOC based on the current context.
+1. IOC arg
+2. `hunting-ioc-at-point`
+3. `hunting-project-current-ioc`
+4. `completing-read`"
+       (interactive)
+       (let ((ioc-at-point (hunting-ioc-at-point)))
+	 (cond
+	  (ioc ioc) ;; First just return the passed ioc if someone passed it
+	  (ioc-at-point (cdr (assoc 'element ioc-at-point)))
+	  ((not (string= hunting-project-current-ioc "none")) hunting-project-current-ioc)
+	  (t (completing-read "Sample: "
+			      (directory-files (expand-file-name (file-name-concat hunting-project-basedir hunting-project-current-project "samples"))
+					       nil
+					       directory-files-no-dot-files-regexp))))))
+
+
+(defun hunting-project-test-yara ()
+  "Run the project yara rule against the most likely IoC."
+  (interactive)
+  (let ((ioc (hunting-project-sample-resolve)))
+    (async-shell-command
+     (format "yara %s %s"
+	     (file-name-concat hunting-project-basedir
+			       hunting-project-current-project
+			       (format "%s.yar" hunting-project-current-project))
+	     (file-name-concat hunting-project-basedir
+			       hunting-project-current-project
+			       "samples"
+			       ioc))
+     (format "*%s: yara*" hunting-project-current-project))))
+
+(defun hunting-project-test-analyzer ()
+  "Run the projects analyzer against the most likely IoC."
+  (interactive)
+  (let ((ioc (hunting-project-sample-resolve)))
+    (async-shell-command
+     (format "./%s %s"
+	     (file-name-concat hunting-project-basedir
+			       hunting-project-current-project
+			       (format "%s-analyzer" hunting-project-current-project))
+	     (file-name-concat hunting-project-basedir
+			       hunting-project-current-project
+			       "samples"
+			       ioc))
+     (format "*%s: analyzer*" hunting-project-current-project))))
 
 (defun hunting-project-switch-projects ()
   "Switch between projects in `hunting-project-basedir`."
   (interactive)
   (setq hunting-project-current-project
-	(completing-read "Project: " (directory-files hunting-project-basedir)))
+	(completing-read "Project: " (directory-files hunting-project-basedir nil directory-files-no-dot-files-regexp)))
   (setenv "HUNTING_DIR" (file-name-concat hunting-project-basedir hunting-project-current-project)))
 
 (defun hunting-project-switch-current-file ()
@@ -88,14 +141,17 @@
     ))
 
 
-(defun hunting-project-hash-contains-p (hn)
+(defun hunting-project-hash-contains-p (hn &optional recurse)
   "Given some hashname HN, return t if it is in the current project."
   (interactive)
   (let* ((hashname (gethash hn hunting-project-hash-cache)))
     (if hashname
 	t
-      (progn (hunting-project--hash-compute)
-	     nil))))
+      (if (not recurse)
+	  (progn
+	    (hunting-project--hash-compute)
+	    (hunting-project-hash-contains-p hashname t))
+	nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private Functions ;;
@@ -108,8 +164,6 @@
 	  "#+TITLE: "
 	  title
 	  "\n#+FILETAGS: :project:"
-	  title
-	  ":"
 	  ))
 
 (defun hunting-project--hash-directory (hash-function directory)

@@ -22,17 +22,20 @@
 (require 'hunting-log)
 (require 'org)
 
-(defvar hunting-paranoia-level 4
-  "The current paranoia level.")
+(defvar hunting-paranoia-level 3
+  "The current paranoia level. Passive Neutral by default.")
 
-(defconst hunting-paranoia-level-local 4
+(defconst hunting-paranoia-level-local 5
   "Local only.")
 
+(defconst hunting-paranoia-level-organization 4
+  "Only systems which are within a trusted organization.")
+
 (defconst hunting-paranoia-level-passive-neutral 3
-  "Passive reconnisance.")
+  "Passive reconnisance from neutral parties.")
 
 (defconst hunting-paranoia-level-passive 2
-  "Passive reconnisance from neutral parties.")
+  "Passive reconnisance.")
 
 (defconst hunting-paranoia-level-active 1
   "Active reconnisance.")
@@ -40,10 +43,19 @@
 (defconst hunting-paranoia-level-illegal 0
   "Activity which may cross legal boundaries.")
 
+(defconst hunting-paranoia-reverse-map
+  '((0 . hunting-paranoia-level-illegal)
+    (1 . hunting-paranoia-level-active)
+    (2 . hunting-paranoia-level-passive)
+    (3 . hunting-paranoia-level-passive-neutral)
+    (4 . hunting-paranoia-level-organization)
+    (5 . hunting-paranoia-level-local)))
+
 (defvar hunting-paranoia-dissallowed-domains '()
   "Domains that are not allowed to be accessed.")
 
 (defconst hunting-paranoia-levels `(("Local: Do now allow any traffic to leave my system" . ,hunting-paranoia-level-local)
+				    ("Organization: Traffic can leave my system but only to machines within my organization" . ,hunting-paranoia-level-organization)
 				    ("Passive: Allow traffic but never directly to the adversary" . ,hunting-paranoia-level-passive)
 				    ("Passive Neutral: Allow traffic but only to neutral third-parties" . ,hunting-paranoia-level-passive-neutral)
 				    ("Active: Allow traffic to leave my system. I want the adversary to know" . ,hunting-paranoia-level-active)
@@ -70,6 +82,7 @@
     (if buffer-paranoia-level
 	(cond
 	 ((string-match-p "local" buffer-paranoia-level) hunting-paranoia-level-local)
+	 ((string-match-p "organization" buffer-paranoia-level) hunting-paranoia-level-organization)
 	 ((string-match-p "neutral" buffer-paranoia-level) hunting-paranoia-level-passive-neutral)
 	 ((string-match-p "passive" buffer-paranoia-level) hunting-paranoia-level-passive)
 	 ((string-match-p "active" buffer-paranoia-level) hunting-paranoia-level-active)

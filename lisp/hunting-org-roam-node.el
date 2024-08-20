@@ -37,7 +37,6 @@
   (interactive)
   (let* ((ioc (hunting-ioc-at-point))
 	 (title (alist-get 'element ioc))
-	 (element-id (org-id-uuid))
 	 (bounds `(,(alist-get 'back-bound ioc) . ,(alist-get 'forward-bound ioc)))
 	 (ioc-type  (nth 0 (alist-get 'type ioc)))
 	 (start-time  (alist-get 'start-time ioc))
@@ -45,6 +44,12 @@
 	 (start-time-string (if start-time (format-time-string "<%Y-%m-%d %a %H:%M>" start-time)))
 	 (end-time-string (if end-time (format-time-string "<%Y-%m-%d %a %H:%M>" end-time)))
 	 (project-name hunting-project-current-project)
+	 (project-node-link (if (not (string= "adhoc"
+					      project-name))
+				(format "[[id:%s][%s]]"
+					(hunting-org-roam-get-node-id project-name)
+					project-name)
+			      nil))
 	 (current-node (org-roam-node-id (org-roam-node-at-point)))
 	 (current-node-title (cadr (car (org-collect-keywords '("TITLE")))))
 	 (current-node-link (format "[[id:%s][%s]]" current-node current-node-title))
@@ -56,7 +61,7 @@
 	(delete-region (car bounds) (cdr bounds))
 	(org-roam-capture- :node (org-roam-node-create :title (format "%s" title))
 			   :templates `(("n" "notes" plain "%?"
-					 :target (file+head+olp ,(format "notes/%s.org" (hunting-org-roam-node--safe-name title))
+					 :target (file+head+olp ,(format "%s/%s.org" hunting-project-iocs-dir-name (hunting-org-roam-node--safe-name title))
 								,(concat "#+title: "
 									 title
 									 (if current-node-paranoia-buffer-level
@@ -65,16 +70,18 @@
 									 ioc-type
 									 ": :"
 									 (if project-name project-name "adhoc")
-									 ":\n#+CREATED: %U\n\n")
+									 ":\n#+CREATED: %U\n\n\n"
+									 )
 								("References" ,(concat "%t "
 										       project-name
-											       " by %n from "
+										       " by %n from "
 										       current-node-link
+										       (if project-node-link
+											   (format " in %s " project-node-link)
+											 nil)
 										       " :investigation:"
-										       (if project-name project-name "adhoc")
-										       ":\n:PROPERTIES:\n:ID: "
-										       element-id
-										       "\n:START-TIME: "
+										       "\n:PROPERTIES:\n"
+										       ":START-TIME: "
 										       start-time-string
 										       "\n:END-TIME: "
 										       end-time-string

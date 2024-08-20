@@ -98,7 +98,10 @@ Change to a previous IoC in the kill ring."
 (defun hunting-modeline-create-view ()
   "Function called on modeline to provide local context."
   (cond
-   ((= 3 hunting-modeline-toggle) (format " 😖 Paranoia: %i" hunting-paranoia-level))
+   ((= 3 hunting-modeline-toggle) (format " 😖 Paranoia: %s"
+					  (substring
+					   (symbol-name (alist-get hunting-paranoia-level hunting-paranoia-reverse-map))
+					   (length "hunting-paranoia-level-"))))
    ((= 2 hunting-modeline-toggle) (format " 📔 File: %s" (if hunting-project-current-file hunting-project-current-file "none")))
    ((= 1 hunting-modeline-toggle) (format " 🔬 IoC: %s" (hunting-modeline-ioc-string)))
    ((= 0 hunting-modeline-toggle) (format "  Project: %s" hunting-project-current-project))))

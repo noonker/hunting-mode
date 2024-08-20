@@ -41,14 +41,14 @@
 1. IOC arg
 2. `hunting-ioc-at-point`
 3. `hunting-project-current-ioc`
-4. `read-string`"
+4. `completing-read`"
   (interactive)
   (let ((ioc-at-point (hunting-ioc-at-point)))
     (cond
      (ioc ioc) ;; First just return the passed ioc if someone passed it
      (ioc-at-point (cdr (assoc 'element ioc-at-point)))
      ((not (string= hunting-project-current-ioc "none")) hunting-project-current-ioc)
-     (t (read-string "IoC: ")))))
+     (t (completing-read "IoC: " (hunting-ioc--likely-iocs))))))
 
 (defun hunting-ioc-type (ioc)
   "Given an IOC try to determine the type."
@@ -169,14 +169,22 @@ On match return:
 	      (back-bound . ,back-whitespace)
 	      (forward-bound . ,forward-whitespace)
 	      (start-time . ,(car time-range))
-	      (end-time . ,(cadr time-range))
-	      )
+	      (end-time . ,(cadr time-range)))
 	  nil)
 	))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;
+
+(defun hunting-ioc--likely-iocs ()
+  "Likely IoCs for autocompletion.  
+Files in the samples directory as well as any IoC in the cache."
+  (append
+   (directory-files (expand-file-name (file-name-concat hunting-project-basedir hunting-project-current-project "samples"))
+		    nil
+		    directory-files-no-dot-files-regexp)
+   (mapcar 'car hunting-glyph--search-cache)))
 
 (defun hunting-ioc--get-description ()
   (interactive)
