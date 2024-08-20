@@ -92,20 +92,19 @@
 					       directory-files-no-dot-files-regexp))))))
 
 
-(defun hunting-project-test-yara ()
+(defun hunting-project-test-yara (arg)
   "Run the project yara rule against the most likely IoC."
-  (interactive)
-  (let ((ioc (hunting-project-sample-resolve)))
-    (async-shell-command
-     (format "yara %s %s"
-	     (file-name-concat hunting-project-basedir
-			       hunting-project-current-project
-			       (format "%s.yar" hunting-project-current-project))
-	     (file-name-concat hunting-project-basedir
-			       hunting-project-current-project
-			       "samples"
-			       ioc))
-     (format "*%s: yara*" hunting-project-current-project))))
+  (interactive "P")
+  (async-shell-command
+   (format "yara %s %s"
+	   (file-name-concat hunting-project-basedir
+			     hunting-project-current-project
+			     (format "%s.yar" hunting-project-current-project))
+	   (file-name-concat hunting-project-basedir
+			     hunting-project-current-project
+			     "samples"
+			     (if arg (hunting-project-sample-resolve) "")))
+   (format "*%s: yara*" hunting-project-current-project)))
 
 (defun hunting-project-test-analyzer ()
   "Run the projects analyzer against the most likely IoC."
