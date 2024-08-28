@@ -115,6 +115,12 @@ REF: a reference is this is a linked table"
     (if ref (j2t-c+ (format "#+name: %s\n" ref))) ;; If there's a reference add a name block to establish the linkage
 
     (cond
+     ;; ----- Element is an empty vector -----
+     ((and (vectorp elt)
+           (= (length elt) 0))
+      (j2t-c+ "| |\n")
+      )
+     
      ;; ----- Element is a hash-map -----
      ((consp elt)
       (progn
@@ -128,9 +134,9 @@ REF: a reference is this is a linked table"
         (j2t-c+ "\n")
         ;; Recursively call this function to create any subtables
         (mapc (lambda (x)  (progn  (if j2t-debug (message (format "\nThe symbol I'm going to look up is: %s\n  it's type is: %s\n  and the value is: %s" x (type-of x) (alist-get x elt))))
-                              (if ref
-                                  (j2t-c+ (j2t-tablify (alist-get x elt) (format "%s_%s" x ref)))
-                                (j2t-c+ (j2t-tablify (alist-get x elt) (format "%s" x))))))
+				   (if ref
+                                       (j2t-c+ (j2t-tablify (alist-get x elt) (format "%s_%s" x ref)))
+                                     (j2t-c+ (j2t-tablify (alist-get x elt) (format "%s" x))))))
 	      nex)
         ))
 
@@ -165,12 +171,6 @@ REF: a reference is this is a linked table"
         (mapc (lambda (x) (j2t-c+ (j2t-parse-vector-vector x))) elt)
         (j2t-c+ "\n")
         ))
-
-     ;; ----- Element is an empty vector -----
-     ((and (vectorp elt)
-           (= (length elt) 0))
-      (j2t-c+ "| |\n")
-      )
 
      ;; ----- Element is a vector of strings -----
      ((vectorp elt)
