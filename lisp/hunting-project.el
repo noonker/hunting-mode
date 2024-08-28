@@ -103,7 +103,8 @@
 	   (file-name-concat hunting-project-basedir
 			     hunting-project-current-project
 			     "samples"
-			     (if arg (hunting-project-sample-resolve) "")))
+			     (if (not arg)
+				 (hunting-project-sample-resolve) "")))
    (format "*%s: yara*" hunting-project-current-project)))
 
 (defun hunting-project-test-analyzer ()
