@@ -84,15 +84,17 @@
   "Match a string representing a CVE."
   (s-matches-p hunting-cve-regex cve))
 
+;; The order here matters. In a case like a hash we want to make sure the more specific
+;; predicate is higher on the list.
 (defvar hunting-ioc-predicates
   `((,hunting-ioc-ipv4 hunting-ipv4-p)
     (,hunting-ioc-ipv6 hunting-ipv6-p)
     (,hunting-ioc-domain hunting-domain-p)
     (,hunting-ioc-cve hunting-cve-p)
     (,hunting-ioc-url hunting-url-p)
-    (,hunting-ioc-md5 hunting-md5-p)
     (,hunting-ioc-sha256 hunting-sha256-p)
     (,hunting-ioc-sha1 hunting-sha1-p)
+    (,hunting-ioc-md5 hunting-md5-p)
     (,hunting-ioc-email hunting-email-p)
     (,hunting-ioc-asn hunting-asn-p)
     (,hunting-ioc-netblock hunting-netblock-p)))
