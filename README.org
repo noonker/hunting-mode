@@ -71,7 +71,7 @@ These could take some actions like automatically pushing those iocs to some remo
 
 So in the below example we can see that inserting an IOC that looks like an IP will check it it exists in a local MISP instance. If it does a glyph will appear nest to it and signify twe have a match in MISP =💢8.8.8.8=
 
-[[./docs/res/glyph.webm]]
+[[./docs/res/glyph.gif]]
 
 Similarly, if we drop any of the common formats for a hash, hunting-mode will look in the current project to see if we have the hash downloaded
 
@@ -137,7 +137,7 @@ There are two ways to make calls- named calls and meta calls
 
 With a named call you're going to be querying the API you want directly so for example:
 
-[[./docs/res/api.webm]]
+[[./docs/res/api.gif]]
 
 =hunting-api-circl-pdns-query= this would mean you know that you want to call circl.lu to do a pdns query. You could also just use a meta call
 
@@ -191,7 +191,7 @@ You can switch between projects with =hunting-project-switch-project= . The curr
 
 If you would like to use the MITRE ATT&CK types in your notebook you can fuzzy search and insert them by calling =hunting-attck-insert=. This will insert the indicator at point but will additionally add the ID of the indicator to the metadata of the file.
 
-[[./docs/res/attck.webm]]
+[[./docs/res/attck.gif]]
 
 When you have added several ATT&CK indicators to a notebook you can run =hunting-attck-insert-table=. This will look through all of the ATT&CK entities in the notebook and insert a table which shows malware, intrusion sets, and threat actors which have likely matches for some collection of IOCs
 
