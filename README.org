@@ -155,13 +155,13 @@ This will take the ioc at point and convert it to it's own document and insert a
 
 In addition this will collapse any timestamp objects of the ioc into metadata in the containing note.
 
-[[file:docs/res/node.webm][node creation]]
+[[./docs/res/node.gif]]
 
 Within the child node you will also see information about which investigations are linked to a specific node. So if the same ioc shows up in multiple investigations you will see a linkage.
 
 Additionally if you use =org-roam-ui= you can visualize the linkages in the web:
 
-[[file:docs/res/roam-ui.png][roam ui]]
+[[./res/roam-ui.png]]
 
 * Projects
 
