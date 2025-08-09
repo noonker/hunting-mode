@@ -22,7 +22,7 @@
 
 (defun robtex-query (uri)
   "Query robtex for the given URI"
-  (if (hunting-paranoia-function-acceptable-for-p 'hunting-paranoia-level-passive)
+  (if (hunting-paranoia-function-acceptable-for-p hunting-paranoia-level-passive)
       (request (format "https://freeapi.robtex.com/%s%s" uri
 		       (if hunting-api-key-robtex (format "?key=%s" hunting-api-key-robtex) ""))
 	:parser 'buffer-string

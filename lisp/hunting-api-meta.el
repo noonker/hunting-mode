@@ -33,6 +33,7 @@
 (require 'hunting-api-virustotal)
 (require 'hunting-api-key)
 (require 'hunting-api-active-dns)
+(require 'hunting-api-hackertarget)
 (require 'hunting-ioc)
 
 (defvar hunting-api-meta-resolvers '(("Passive DNS: Domain -> IP" . passive-dns-to-ip)
@@ -56,7 +57,8 @@
 				      ("DNS: Domain -> Records" . hunting-api-active-dig)
 				      ("Whois: Host -> Whois" . hunting-api-active-whois)
 				      ("MISP: Attribute in Event" . hunting-api-misp-search)
-				      ("Virustotal: Account Details" . hunting-api-virustotal-account))
+				      ("Virustotal: Account Details" . hunting-api-virustotal-account)
+				      ("Hackertarget: IP -> ASN" . hunting-api-hackertarget-as-lookup  ))
   "List of available API resolvers for named functions.")
 
 (defun hunting-api-meta-call ()
@@ -91,10 +93,12 @@
 	(if func (progn
 		   (end-of-line)
 		   (newline)
-		   
 		   (setq res (funcall func ioc)))
+	  
 	  (hunting-log/error (format "No available API resolvers for the resolver: %s." resolver))))
-      (if res (insert res)))))
+      (if res (progn
+		(message res)
+		(insert (concat "\n" res)))))))
 
 (defun passive-dns-to-ip (domain &optional start-time end-time)
   "DOMAIN to IP using passive DNS optional START-TIME and END-TIME."

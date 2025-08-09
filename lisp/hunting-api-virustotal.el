@@ -49,7 +49,7 @@
 		   ("x-apikey" . ,hunting-api-key-virustotal )))))
 
 
-(defun hunting-api-virustotal-account ()
+(defun hunting-api-virustotal-account (_)
   "Query Virustotal for current API key details."
   (hunting-api-virustotal-get-base-request (format "users/%s" hunting-api-key-virustotal)))
 

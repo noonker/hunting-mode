@@ -1,10 +1,211 @@
 #+TITLE: Hunting-Mode
 
-🚨🚨🚨 THIS IS A WIP 🚨🚨🚨
+Emacs =hunting-mode= extends org-mode to provide features which are useful to people who are taking notes on cyber investigations.
 
-If what you're looking at here looks interesting to you hit me up here or at @noonker@infosec.exchange 
+It gives emacs an understanding of common IoC types and then based on that allows you to 
 
-* Overview
+Features:
+ - ✔️ Simplify API Lookups and insertign data into your notes with json-to-table
+ - ✔️ Attach glyhs to you iocs that are populated by API callbacks 
+ - ✔️ Fuzzy search and insert ATT&CK indicators to your notebooks and calulate matching intrusion sets 
+ - ✔️ Associate a notebook with a MISP investigation and push and pull iocs from your MISP events
+ - ✔️ Sensitivity of documents is understood and respected 
+ - ✔️ IOCs can be timebound and that time bounding is passed through to API calls
+ - ✔️ Relationships between iocs and investigations is maintained with org-roam
+
+* Installation
+
+With use-package:
+
+#+begin_src emacs-lisp
+(use-package deferred) ;; Required dependency
+
+(use-package hunting-mode
+  :straight (:host github
+             :repo "noonker/hunting-mode"
+	     :files ("lisp/*.el"))
+  :ensure t
+  :config
+  ;; Load hunting-mode for org files
+  (add-hook 'org-mode-hook 'hunting-mode)
+
+  ;; Add any API keys
+  (setq hunting-api-key-misp "YOUR_KEY")
+  (setq hunting-api-url-misp "YOUR_ENDPOINT")
+  (setq hunting-api-key-robtex "YOUR_KEY")
+  (setq hunting-api-key-circl-pdns "YOUR_KEY")
+
+  ;; Register some callbacks
+  (add-to-list 'hunting-glyph-hooks
+	     `(,hunting-md5-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+	     `(,hunting-sha1-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+	     `(,hunting-sha256-regex-wrapped hunting-project-hash-contains-p "✅" "❌"))
+  )
+#+end_src
+
+For people who don't already use emacs a starter config can be found here (TODO)
+
+* Emacs Understands IoCs
+
+Hunting modes understands IoCs (Domains, IPs, Hashes, and [[https://github.com/noonker/hunting-mode/tree/main/lisp/hunting-regex.el][more]])
+
+So when you type an ioc like =noonker.com= into a buffer you can run =hunting-ioc-at-point= and see the parsed details about the node
+
+*noonker.com*
+=hunting-ioc-at-point= => =((element . "noonker.com") (type "domain") (back-bound . 956) (forward-bound . 967) (start-time) (end-time))=
+
+Additionally, you can time bound an IOC to the points in time where it was relevant to your investigation
+
+*noonker.com-<2025-07-06>--<2025-07-08>*
+=hunting-ioc-at-point= => ((element . "noonker.com") (type "domain") (back-bound . 1077) (forward-bound . 1116) (start-time 26730 720) (end-time 26732 42448))=
+
+This will allow you to make API calls for this node which will automatically pass on first-seen and last-seen boundings to relevant iocs.
+
+* IOC Callbacks & Glyphs
+
+A main goal of emacs =hunting-mde= was to take the do-what-i-mean (DWIM) approach a step further in your notes- Hunting mode will do-what-i-would-do-but-am-very-lazy-and-would-prefer-the-machine-to-do-it,
+
+In your emacs config file you can specify a number of functions that you would like to trigger based on iocs that are inserted into your document.
+
+These could take some actions like automatically pushing those iocs to some remote system- or automatically check some remote systems or local directories for existence of those iocs.
+
+So in the below example we can see that inserting an IOC that looks like an IP will check it it exists in a local MISP instance. If it does a glyph will appear nest to it and signify twe have a match in MISP =💢8.8.8.8=
+
+[[./docs/res/glyph.webm]]
+
+Similarily, if we drop any of the common formats for a hash, hunting-mode will look in the current project to see if we have the hash downloaded
+
+#+begin_src emacs-lisp
+Add some callback hooks :)
+  (add-to-list ' hunting-glyph-hooks
+		 `(,hunting-ipv4-regex-wrapped hunting-misp-ioc-in-misp-p "💢" "💤")
+		 `(,hunting-md5-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 `(,hunting-sha1-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 `(,hunting-sha256-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
+		 )
+#+end_src
+
+* Paranoia
+
+Of course, for some projects it may not be approopriate to execute certain callbacks. This could roughly map to the concept of TLP however to avoid any trappings of adopting the same nomenclature I have opted for =paranoia=.
+
+A global level can be updated with =hunting-paranoia-set-level=
+
+Directory local paranoia can use native emacs functionaily like =.dir-locals.el=
+
+#+begin_src emacs-lisp
+((org-mode . ((hunting-paranoia-level . hunting-paranoia-level-local))))
+#+end_src
+
+Or can be on a per-file basis with the header:
+#+begin_src text
+# -*- hunting-paranoia-level: hunting-paranoia-level-local; -*-
+#+end_src
+
+or the footer:
+#+begin_src text
+# Local Variables:
+# hunting-paranoia-level: hunting-paranoia-level-local
+# End:
+#+end_src
+
+
+The current paranoia levels:
+#+begin_src emacs-lisp
+("Local: Do now allow any traffic to leave my system" . ,hunting-paranoia-level-local)
+("Organization: Traffic can leave my system but only to machines within my organization" . ,hunting-paranoia-level-organization)
+("Passive: Allow traffic but never directly to the adversary" . ,hunting-paranoia-level-passive)
+("Passive Neutral: Allow traffic but only to neutral third-parties" . ,hunting-paranoia-level-passive-neutral)
+("Active: Allow traffic to leave my system. I want the adversary to know" . ,hunting-paranoia-level-active)
+("Illegal: I literally don't care if I accidentally commit a crime" . ,hunting-paranoia-level-illegal)
+#+end_src
+
+
+When defining new API interfaces to be used with hunting-mode make sure that the the current paranoia level is appropriate for the function with a check like this:
+
+#+begin_src emacs-lisp 
+(if (hunting-paranoia-function-acceptable-for-p 'hunting-paranoia-level-passive-neutral)
+...
+<ACTION>) 
+#+end_src
+
+* API Calls
+
+One of the featurs of hunting mode is the ability to call APIs from within your notebook and have the results inserted directly. THe JSON will be inserted as a series of linked tables based on the json that is returned from the endpoint.
+
+There are two ways to make calls- named calls and meta calls
+
+With a named call you're going to be querying the API you want directly so for example:
+
+[[./docs/res/api.webm]]
+
+=hunting-api-circl-pdns-query= this would mean you know that you want to call circl.lu to do a pdns query. You could also just use a meta call
+
+=Domain -> Historical IPs= would instead go through a list of APIs that could possibly resolve this and use the first which is acceptable for your current paranoia level.
+
+If you would like an API added please reach out.
+
+* Linkages
+
+Sometimes you want all of your notes to live inside the same document. You may find that for organizational purposes you would like to split up your investigation into notes about specific iocs or entities themselves which have linkages back to your main investigtaion. For this you can use the command
+
+=huinting-org-roam-node-convert-at-point=
+
+This will take the ioc at point and convert it to it's own document and insert a linkage to that document in the containing note. This is powered by the databse of =org-roam=
+
+In addition this will collapse any timestamp objects of the ioc into metadata in the containing note.
+
+[[file:docs/res/node.webm][node creation]]
+
+Within the child node you will also see information about which investigations are linked to a specific node. So if the same ioc shows up in multiple investigations you will see a linkage.
+
+Additionally if you use =org-roam-ui= you can visualize the linkages in the web:
+
+[[file:docs/res/roam-ui.png][roam ui]]
+
+* Projects
+
+=hunting-mode= has an opinionated project structure
+
+Projects can be created with =hunting-project-create-project=
+
+This will create a project in the directory specified by =hunting-project-basedir= and will contain several files and directories:
+
+#+begin_quote
+samples/              # Directory for samples and files related to the investigation
+meta/                 # Directory for storing any additional materials for an investigation
+scripts/              # Directory for any scripts used in this investigation
+<proj-name>.org       # Top level investigation document
+<proj-name>.yar       # Yara file to run againt files in samples/
+>proj-name>-analyzer  # Executable file to be run against files in samples/
+#+end_quote
+
+
+Call =hunting-project-test-analyzer= to run the binary `<proj-name>-analyzer` against all files in =samples=
+
+Call =hunting-project-test-yara= to run the yara rule in =<proj-name>.yar= against all files in =samples/=
+
+You can switch between projects with =hunting-project-switch-project= . The current project should be reflected in the modline. If it is not you may be displaying one of the other optional pieces of information that can be displayed like the current paranoia level. To switch this run =hunting-toggle-view=
+
+* ATT&CK
+
+If you would like to use the MITRE ATT&CK types in your notebook you can fuzzy search and insert them by calling =hunting-attck-insert=. This will insert the indicator at point but will additionally add the ID of the indicator to the metadata of the file.
+
+[[./docs/res/attck.webm]]
+
+When you have added several ATT&CK indicators to a notebook you can run =hunting-attck-insert-table=. This will look through all of the ATT&CK entities in the notebook and insert a table which shows malware, intrusion sets, and threat actors which have likely matches for some collection of IOCs
+
+* Sync your Investigations
+
+=hunting-mode= is meant to sit between your high-structure high-friction systems like MISP and notepad.exe. It is meant to be a place to collect your individual messy notes and repidly ask and answer questions in a place that you can reference later.
+
+Right now, we have the ability to associate a notes document with an existing MISP investigation. This will allow you to push and pull IOCs between the two systems.
+
+To bind a document to a MISP event run =hunting-misp-bind-event=. This will prompt you for a MISP event id. Once this is set up you can call:
+ - =hunting-misp-add-event-attributes-from-buffer= to push anything that looks like an IOC in the current buffer up to MISP
+ - =hunting-misp-insert-event-attributes= to grab any IOCs in a MISP event that aren't in this document to the end of the file.
+
+* Reason this Exists
 The problem with working with DFIR/Infrastructure Analysis/Threat hunting types of workflows is the different ways of visualizing the data and the need for both structured data but also not-cumbersome workflows. In all things there's a give and take.
 
 So ideally I want:
@@ -17,35 +218,8 @@ So ideally I want:
  - Exportable in a roughly human readable form
  - Be able to visualize the IoCs as both a series of relationships between nodes and a timeseries graph and be able to filter on the graph
 
-Using org-roam with some enhanced features focused on IoCs and Pivoting will give me a lot of this.
-
-* Installation
-
-#+begin_src emacs-lisp
-(use-package hunting-mode
-  :straight (:host github
-		   :repo "noonker/hunting-mode")
-  :ensure t
-  :init
-  (add-hook 'org-mode-hook 'hunting-mode)
-  (setq hunting-api-key-misp "YOUR_KEY")
-  (setq hunting-api-url-misp "YOUR_ENDPOINT")
-  (setq hunting-api-key-robtex "YOUR_KEY")
-  (setq hunting-api-key-circl-pdns "YOUR_KEY")
-
-;; Add some callback hooks :)
-  (add-to-list ' hunting-glyph-hooks
-		 `(,hunting-ipv4-regex-wrapped hunting-misp-ioc-in-misp-p "💢" "💤")
-		 `(,hunting-md5-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
-		 `(,hunting-sha1-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
-		 `(,hunting-sha256-regex-wrapped hunting-project-hash-contains-p "✅" "❌")
-		 )
-  )
-
-#+end_src
-
-
 * Recommended Additional (Rad) Libraries
 
 - GEO Locations embedded into org https://github.com/minad/osm <3
 - =svg-tag-mode=
+- org transclusion
