@@ -161,7 +161,7 @@ Within the child node you will also see information about which investigations a
 
 Additionally if you use =org-roam-ui= you can visualize the linkages in the web:
 
-[[./res/roam-ui.png]]
+[[./docs/res/roam-ui.png]]
 
 * Projects
 
