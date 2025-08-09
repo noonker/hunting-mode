@@ -2,26 +2,26 @@
 
 Emacs =hunting-mode= extends org-mode to provide features which are useful to people who are taking notes on cyber investigations.
 
-It gives emacs an understanding of common IoC types and then based on that allows you to 
+It gives Emacs an understanding of common IoC types and then based on that allows you to 
 
 Features:
- - ✔️ Simplify API Lookups and insertign data into your notes with json-to-table
- - ✔️ Attach glyhs to you iocs that are populated by API callbacks 
- - ✔️ Fuzzy search and insert ATT&CK indicators to your notebooks and calulate matching intrusion sets 
+ - ✔️ Simplify API Lookup and inserting data into your notes with json-to-table
+ - ✔️ Attach glyphs to you iocs that are populated by API callbacks 
+ - ✔️ Fuzzy search and insert ATT&CK indicators to your notebooks and calculate matching intrusion sets 
  - ✔️ Associate a notebook with a MISP investigation and push and pull iocs from your MISP events
  - ✔️ Sensitivity of documents is understood and respected 
- - ✔️ IOCs can be timebound and that time bounding is passed through to API calls
+ - ✔️ IOCs can be time bound and that time bounding is passed through to API calls
  - ✔️ Relationships between iocs and investigations is maintained with org-roam
 
 * Installation
 
 With use-package:
 
-#+begin_src emacs-lisp
+#+begin_src Emacs-lisp
 (use-package deferred) ;; Required dependency
 
 (use-package hunting-mode
-  :straight (:host github
+  :straight (:host GitHub
              :repo "noonker/hunting-mode"
 	     :files ("lisp/*.el"))
   :ensure t
@@ -43,7 +43,7 @@ With use-package:
   )
 #+end_src
 
-For people who don't already use emacs a starter config can be found here (TODO)
+For people who don't already use Emacs a starter config can be found here (TODO)
 
 * Emacs Understands IoCs
 
@@ -59,13 +59,13 @@ Additionally, you can time bound an IOC to the points in time where it was relev
 *noonker.com-<2025-07-06>--<2025-07-08>*
 =hunting-ioc-at-point= => ((element . "noonker.com") (type "domain") (back-bound . 1077) (forward-bound . 1116) (start-time 26730 720) (end-time 26732 42448))=
 
-This will allow you to make API calls for this node which will automatically pass on first-seen and last-seen boundings to relevant iocs.
+This will allow you to make API calls for this node which will automatically pass on first-seen and last-seen bounding to relevant iocs.
 
 * IOC Callbacks & Glyphs
 
-A main goal of emacs =hunting-mde= was to take the do-what-i-mean (DWIM) approach a step further in your notes- Hunting mode will do-what-i-would-do-but-am-very-lazy-and-would-prefer-the-machine-to-do-it,
+A main goal of Emacs =hunting-mde= was to take the do-what-i-mean (DWIM) approach a step further in your notes- Hunting mode will do-what-i-would-do-but-am-very-lazy-and-would-prefer-the-machine-to-do-it,
 
-In your emacs config file you can specify a number of functions that you would like to trigger based on iocs that are inserted into your document.
+In your Emacs config file you can specify a number of functions that you would like to trigger based on iocs that are inserted into your document.
 
 These could take some actions like automatically pushing those iocs to some remote system- or automatically check some remote systems or local directories for existence of those iocs.
 
@@ -73,9 +73,9 @@ So in the below example we can see that inserting an IOC that looks like an IP w
 
 [[./docs/res/glyph.webm]]
 
-Similarily, if we drop any of the common formats for a hash, hunting-mode will look in the current project to see if we have the hash downloaded
+Similarly, if we drop any of the common formats for a hash, hunting-mode will look in the current project to see if we have the hash downloaded
 
-#+begin_src emacs-lisp
+#+begin_src Emacs-lisp
 Add some callback hooks :)
   (add-to-list ' hunting-glyph-hooks
 		 `(,hunting-ipv4-regex-wrapped hunting-misp-ioc-in-misp-p "💢" "💤")
@@ -87,13 +87,13 @@ Add some callback hooks :)
 
 * Paranoia
 
-Of course, for some projects it may not be approopriate to execute certain callbacks. This could roughly map to the concept of TLP however to avoid any trappings of adopting the same nomenclature I have opted for =paranoia=.
+Of course, for some projects it may not be appropriate to execute certain callbacks. This could roughly map to the concept of TLP however to avoid any trappings of adopting the same nomenclature I have opted for =paranoia=.
 
 A global level can be updated with =hunting-paranoia-set-level=
 
-Directory local paranoia can use native emacs functionaily like =.dir-locals.el=
+Directory local paranoia can use native Emacs functionally like =.dir-locals.el=
 
-#+begin_src emacs-lisp
+#+begin_src Emacs-lisp
 ((org-mode . ((hunting-paranoia-level . hunting-paranoia-level-local))))
 #+end_src
 
@@ -111,7 +111,7 @@ or the footer:
 
 
 The current paranoia levels:
-#+begin_src emacs-lisp
+#+begin_src Emacs-lisp
 ("Local: Do now allow any traffic to leave my system" . ,hunting-paranoia-level-local)
 ("Organization: Traffic can leave my system but only to machines within my organization" . ,hunting-paranoia-level-organization)
 ("Passive: Allow traffic but never directly to the adversary" . ,hunting-paranoia-level-passive)
@@ -123,7 +123,7 @@ The current paranoia levels:
 
 When defining new API interfaces to be used with hunting-mode make sure that the the current paranoia level is appropriate for the function with a check like this:
 
-#+begin_src emacs-lisp 
+#+begin_src Emacs-lisp 
 (if (hunting-paranoia-function-acceptable-for-p 'hunting-paranoia-level-passive-neutral)
 ...
 <ACTION>) 
@@ -131,7 +131,7 @@ When defining new API interfaces to be used with hunting-mode make sure that the
 
 * API Calls
 
-One of the featurs of hunting mode is the ability to call APIs from within your notebook and have the results inserted directly. THe JSON will be inserted as a series of linked tables based on the json that is returned from the endpoint.
+One of the features of hunting mode is the ability to call APIs from within your notebook and have the results inserted directly. The JSON will be inserted as a series of linked tables based on the json that is returned from the endpoint.
 
 There are two ways to make calls- named calls and meta calls
 
@@ -141,17 +141,17 @@ With a named call you're going to be querying the API you want directly so for e
 
 =hunting-api-circl-pdns-query= this would mean you know that you want to call circl.lu to do a pdns query. You could also just use a meta call
 
-=Domain -> Historical IPs= would instead go through a list of APIs that could possibly resolve this and use the first which is acceptable for your current paranoia level.
+=Domain -> Historical IPs= would instead go through a list of providers that could possibly resolve this and use the first which is acceptable for your current paranoia level.
 
 If you would like an API added please reach out.
 
 * Linkages
 
-Sometimes you want all of your notes to live inside the same document. You may find that for organizational purposes you would like to split up your investigation into notes about specific iocs or entities themselves which have linkages back to your main investigtaion. For this you can use the command
+Sometimes you want all of your notes to live inside the same document. You may find that for organizational purposes you would like to split up your investigation into notes about specific iocs or entities themselves which have linkages back to your main investigation. For this you can use the command
 
-=huinting-org-roam-node-convert-at-point=
+=hunting-org-roam-node-convert-at-point=
 
-This will take the ioc at point and convert it to it's own document and insert a linkage to that document in the containing note. This is powered by the databse of =org-roam=
+This will take the ioc at point and convert it to it's own document and insert a linkage to that document in the containing note. This is powered by the database of =org-roam=
 
 In addition this will collapse any timestamp objects of the ioc into metadata in the containing note.
 
@@ -169,15 +169,15 @@ Additionally if you use =org-roam-ui= you can visualize the linkages in the web:
 
 Projects can be created with =hunting-project-create-project=
 
-This will create a project in the directory specified by =hunting-project-basedir= and will contain several files and directories:
+This will create a project in the directory specified by =hunting-project-based= and will contain several files and directories:
 
 #+begin_quote
 samples/              # Directory for samples and files related to the investigation
 meta/                 # Directory for storing any additional materials for an investigation
 scripts/              # Directory for any scripts used in this investigation
 <proj-name>.org       # Top level investigation document
-<proj-name>.yar       # Yara file to run againt files in samples/
->proj-name>-analyzer  # Executable file to be run against files in samples/
+<proj-name>.yar       # Parr file to run against files in samples/
+<proj-name>-analyzer  # Executable file to be run against files in samples/
 #+end_quote
 
 
@@ -185,7 +185,7 @@ Call =hunting-project-test-analyzer= to run the binary `<proj-name>-analyzer` ag
 
 Call =hunting-project-test-yara= to run the yara rule in =<proj-name>.yar= against all files in =samples/=
 
-You can switch between projects with =hunting-project-switch-project= . The current project should be reflected in the modline. If it is not you may be displaying one of the other optional pieces of information that can be displayed like the current paranoia level. To switch this run =hunting-toggle-view=
+You can switch between projects with =hunting-project-switch-project= . The current project should be reflected in the modeline. If it is not you may be displaying one of the other optional pieces of information that can be displayed like the current paranoia level. To switch this run =hunting-toggle-view=
 
 * ATT&CK
 
@@ -213,7 +213,7 @@ So ideally I want:
  - The IoCs should be automatically enriched with configured datasets (is this IoC in VT? If so show some glyph next to it to let me know)
  - A way to pull in external APIs intelligence into my notes and maintain that linkage
  - Automatically maintain the time metadata of an IoC (first seen, last seen, update dates, and changes)
- - Maintain seperate investigations but be able to link the IoCs between investigations
+ - Maintain separate investigations but be able to link the IoCs between investigations
  - Exportable in sharable formats (csv, stix/taxii)
  - Exportable in a roughly human readable form
  - Be able to visualize the IoCs as both a series of relationships between nodes and a timeseries graph and be able to filter on the graph
