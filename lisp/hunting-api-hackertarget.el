@@ -27,4 +27,6 @@
 						     "&output=json"
 						     )))
 
+(provide 'hunting-api-hackertarget)
 
+;;; hunting-api-hackertarget.el ends here
